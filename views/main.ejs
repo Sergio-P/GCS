@@ -1,0 +1,61 @@
+<html>
+<head>
+	<title>Example of GCS</title>
+</head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+<script type="text/javascript">
+var socket;
+
+function init(){
+	socket = io();
+	socket.emit('find',{rank: -1});
+	resAppend("Trying to find a group...");
+	listenIO();
+	$("#msgbut").hide();
+}
+
+function listenIO(){
+	socket.on("group",function(data){
+		resAppend("Added to group: "+data.group)
+		$("#msgbut").show();
+	});
+	socket.on("ungroup",function(data){
+		resAppend("Group disolved");
+		socket.emit('find',{rank: -1});
+		resAppend("Trying to find other group...");
+		$("#msgbut").hide();
+	});
+	socket.on("customEvent",function(data){
+		resAppend("Custom event message: "+data.text);
+	});
+}
+
+function resAppend(text){
+	$("#res").append(text+"<br>");
+}
+
+function sendGroupMsg(){
+	var msg = {
+		event: "customEvent",
+		params:{
+			text: "Hello to my group"
+		}
+	};
+	socket.emit("groupEmit",msg);
+}
+
+$(document).ready(function(){
+	init();
+});
+</script>
+
+<body>
+<h3>GCS Test Example</h3>
+<button id="msgbut" onclick="sendGroupMsg()">Send Message to Group</button><br>
+<pre>
+<div id="res"></div>
+</pre>
+</body>
+</html>
